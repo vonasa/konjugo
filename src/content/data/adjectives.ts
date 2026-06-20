@@ -1,0 +1,43 @@
+import type { Adjective } from '../types';
+
+// v1 seed: regular stems only (spelling-irregular adjectives like hoch / teuer /
+// dunkel / edel / sauer are excluded — they'd misgenerate; see DESIGN.md §2).
+// These are the stems used across the attested pairings in pairings.ts.
+export const ADJECTIVES: readonly Adjective[] = [
+  { stem: 'gut' },
+  { stem: 'klein' },
+  { stem: 'alt' },
+  { stem: 'neu' },
+  { stem: 'schön' },
+  { stem: 'jung' },
+  { stem: 'groß' },
+  { stem: 'rot' },
+  { stem: 'lang' },
+  { stem: 'kurz' },
+  { stem: 'warm' },
+  { stem: 'kalt' },
+  { stem: 'hell' },
+  { stem: 'laut' },
+  { stem: 'stark' },
+  { stem: 'schnell' },
+  { stem: 'langsam' },
+  { stem: 'reich' },
+  { stem: 'arm' },
+  { stem: 'frei' },
+  { stem: 'voll' },
+  { stem: 'leer' },
+  { stem: 'hart' },
+  { stem: 'weich' },
+  { stem: 'süß' },
+  { stem: 'frisch' },
+  { stem: 'grün' },
+  { stem: 'blau' },
+  { stem: 'schwarz' },
+  { stem: 'weiß' },
+  { stem: 'braun' },
+  { stem: 'breit' },
+  { stem: 'schlecht' },
+  { stem: 'nett' },
+  { stem: 'tief' },
+  { stem: 'wild' },
+];

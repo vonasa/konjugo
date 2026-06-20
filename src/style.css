@@ -1,0 +1,112 @@
+/* ------------------------------------------------------------------ *
+ * Konjugo — base theme & layout foundation.
+ * CSS variables here are the single source of truth for the look;
+ * later phases (cards, options, threat, hearts) build on these tokens.
+ * ------------------------------------------------------------------ */
+
+:root {
+  /* surfaces */
+  --bg: #0f1226;
+  --bg-2: #171a36;
+  --surface: #20254a;
+  --surface-2: #2a3060;
+  --border: #383f73;
+
+  /* text */
+  --text: #eef0ff;
+  --text-dim: #a7adda;
+
+  /* brand / feedback */
+  --primary: #6c8cff;
+  --accent: #ffd166;
+  --success: #4ade80;
+  --danger: #f87171;
+
+  /* gender cue palette (paired with m/f/n/pl tags for color-blind safety) */
+  --gender-m: #5aa9ff; /* masculine — blue  */
+  --gender-f: #ff7a9c; /* feminine  — red   */
+  --gender-n: #5fd0a6; /* neuter    — green */
+  --gender-pl: #c89bff; /* plural   — purple */
+
+  /* metrics */
+  --app-max: 480px;
+  --radius: 16px;
+  --gap: clamp(0.6rem, 2.5vw, 1rem);
+
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: radial-gradient(
+      120% 80% at 50% -10%,
+      var(--bg-2) 0%,
+      var(--bg) 60%
+    )
+    fixed;
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#app {
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  /* keep clear of notches / home indicators on phones */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* A "screen" is one full-height, portrait-first view (menu, game, game-over). */
+.screen {
+  width: 100%;
+  max-width: var(--app-max);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.logo {
+  font-size: clamp(2.75rem, 12vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.logo-accent {
+  color: var(--accent);
+}
+
+.tagline {
+  color: var(--text-dim);
+  font-size: clamp(1rem, 4vw, 1.2rem);
+}
+
+.scaffold-note {
+  margin-top: 1.5rem;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* Reduced-motion handling is targeted (see components.css): decorative effects
+ * are disabled, but the functional threat timer keeps animating. JS effects
+ * (particles, flashes, pulses) are gated via prefersReducedMotion(). */

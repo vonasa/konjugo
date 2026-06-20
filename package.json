@@ -1,0 +1,23 @@
+{
+  "name": "konjugo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "A fast, mobile-friendly browser arcade for drilling German grammar (v1: adjective declension).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8"
+  }
+}
