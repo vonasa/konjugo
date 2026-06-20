@@ -1,6 +1,7 @@
 import { el } from './dom';
 
 export interface GameStats {
+  level: string; // difficulty preset name played
   score: number;
   answered: number;
   correct: number;
@@ -25,6 +26,7 @@ export function showGameOver(
     : 0;
 
   const rows: [string, string][] = [
+    ['Level', stats.level],
     ['Score', String(stats.score)],
     ['Best', String(best)],
     ['Accuracy', `${accuracy}%`],

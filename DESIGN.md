@@ -167,7 +167,7 @@ they don't determine the case without motion context). Verb-based triggers are d
   2. Add cases in order **Nom → Acc → Dat → Gen** (genitive last, rarest).
   3. Then re-climb with **indefinite/possessive** (mixed), then **no article** (strong).
   4. **Plural** and **Genitive** are gated to higher tiers so beginners never meet them early.
-- Each tier also **shrinks the clock** and speeds the threat.
+- **Clock — sawtooth:** within a tier the round clock shrinks each correct answer; on tier-up it **resets up** to 90% of the previous tier's start (`TIER_RESET_FACTOR`) for breathing room, then ramps again — never below `CLOCK_FLOOR`.
 
 ### 5.4 Difficulty presets (start screen)
 
@@ -356,9 +356,10 @@ Lives (hearts) · current tier · running score · current combo multiplier · m
 |----------|---------|-------|
 | `STARTING_LIVES` | 4 | 3–5 |
 | `TIER_ADVANCE_EVERY` | 5 correct | per tier |
-| `CLOCK_BEGINNER / INTER / ADVANCED` | 6.5 / 5.2 / 3.64 s | starting round time (Phase 6 balance, +30% start) |
-| `CLOCK_FLOOR` | 1.6 s | minimum as tiers climb |
-| `CLOCK_STEP` | 0.4 s | clock shrink per tier |
+| `CLOCK_BEGINNER / INTER / ADVANCED` | 8.45 / 6.76 / 4.73 s | starting round time |
+| `CLOCK_FLOOR` | 1.6 s | clock never drops below this |
+| `TIER_RESET_FACTOR` | 0.9 | each tier starts at 90% of the previous tier's start |
+| `WITHIN_TIER_STEP` | 0.06 | per-round shrink within a tier (× tier start) |
 | `BASE_POINTS` | 100 | |
 | `COMBO_CAP` | 20 (→ ×3) | combo multiplier ceiling |
 | `TIER_MULT_STEP` | 0.25 | `1 + step × (tier−1)` |

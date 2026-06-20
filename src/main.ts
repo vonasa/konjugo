@@ -25,6 +25,22 @@ const refButton = createReferenceButton({
   onOpen: () => currentView?.pause(),
   onClose: () => currentView?.resume(),
 });
+
+// Restart → abandon the current run and return to the level-select screen.
+const restartButton = el('button', {
+  class: 'icon-btn restart-btn',
+  attrs: {
+    type: 'button',
+    'aria-label': 'Restart — back to level select',
+    title: 'Restart',
+  },
+});
+restartButton.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>`;
+restartButton.addEventListener('click', () => {
+  currentView?.cancel();
+  showMenu();
+});
+
 initAudioUnlock();
 
 function showMenu(): void {
@@ -33,13 +49,14 @@ function showMenu(): void {
 }
 
 function startGame(preset: Preset): void {
-  const hud = createHud(refButton);
+  const hud = createHud([restartButton, refButton]);
   const roundEl = el('div', { class: 'round' });
   app.replaceChildren(el('main', { class: 'screen game' }, hud.root, roundEl));
 
   const view = new RoundView(roundEl);
   currentView = view;
   void runSession(preset, { rng, hud, view }).then((stats) => {
+    if (!stats) return; // run abandoned via the restart button
     sfx.gameOver();
     const isNewBest = setBest(stats.score);
     showGameOver(stats, getBest(), isNewBest, {

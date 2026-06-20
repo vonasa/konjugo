@@ -15,15 +15,15 @@ export interface Hud {
   update(s: HudState): void;
 }
 
-/** Top bar: hearts + tier on the left, combo + score (+ optional ref button) right. */
-export function createHud(refButton?: HTMLElement): Hud {
+/** Top bar: hearts + tier on the left, combo + score + control buttons on the right. */
+export function createHud(controls: HTMLElement[] = []): Hud {
   const lives = el('div', { class: 'hud-lives', attrs: { 'aria-label': 'Lives' } });
   const tier = el('div', { class: 'hud-tier' });
   const combo = el('div', { class: 'hud-combo', attrs: { 'aria-label': 'Combo' } });
   const score = el('div', { class: 'hud-score', attrs: { 'aria-label': 'Score' } });
 
   const right = el('div', { class: 'hud-right' }, combo, score);
-  if (refButton) right.append(refButton);
+  for (const control of controls) right.append(control);
   const root = el(
     'div',
     { class: 'hud' },

@@ -4,7 +4,7 @@ import type { Hud } from '../ui/hud';
 import type { RoundView } from '../ui/round';
 import type { GameStats } from '../ui/gameOver';
 import { CONFIG } from './config';
-import { planForTier, tierForCorrect } from './ramp';
+import { planForProgress, tierForCorrect } from './ramp';
 import type { Preset } from './presets';
 import { roundPoints } from './scoring';
 
@@ -18,7 +18,7 @@ export interface SessionDeps {
 export async function runSession(
   preset: Preset,
   deps: SessionDeps,
-): Promise<GameStats> {
+): Promise<GameStats | null> {
   let lives = CONFIG.STARTING_LIVES;
   let score = 0;
   let combo = 0;
@@ -28,9 +28,9 @@ export async function runSession(
   let maxTier = 1;
 
   for (;;) {
-    const tier = tierForCorrect(correct);
+    const plan = planForProgress(preset, correct);
+    const tier = plan.constraints.tier;
     maxTier = Math.max(maxTier, tier);
-    const plan = planForTier(preset, tier);
 
     deps.hud.update({ lives, maxLives: CONFIG.STARTING_LIVES, tier, score, combo });
 
@@ -39,6 +39,7 @@ export async function runSession(
       clockMs: plan.clockMs,
       combo: combo + 1, // streak reached if this answer is correct
     });
+    if (res.aborted) return null; // restart → back to menu
     answered++;
 
     if (res.correct) {
@@ -60,7 +61,7 @@ export async function runSession(
     });
 
     if (lives <= 0) {
-      return { score, answered, correct, longestCombo, tierReached: maxTier };
+      return { level: preset.name, score, answered, correct, longestCombo, tierReached: maxTier };
     }
   }
 }

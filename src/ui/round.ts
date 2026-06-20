@@ -10,6 +10,7 @@ import { burstAt, screenFlash } from '../fx/particles';
 export interface RoundResult {
   correct: boolean;
   timedOut: boolean;
+  aborted?: boolean; // session abandoned mid-round (restart → menu)
   chosenId: string | null;
   correctId: string;
   responseMs: number;
@@ -36,6 +37,7 @@ interface ActiveRound {
   start: number;
   pausedAt: number; // 0 when not paused
   resolved: boolean;
+  resolve: (r: RoundResult) => void; // resolver of the mount() promise
 }
 
 /** Renders one challenge with the advancing-threat clock, handles tap/click +
@@ -46,6 +48,7 @@ export class RoundView {
   private keyHandler?: (e: KeyboardEvent) => void;
   private current?: ActiveRound;
   private paused = false;
+  private aborted = false;
 
   constructor(
     private readonly container: HTMLElement,
@@ -75,7 +78,40 @@ export class RoundView {
     }
   }
 
+  /** Abandon the current round (restart → menu): stop the clock and resolve the
+   *  pending mount with an aborted result so the session loop exits cleanly. */
+  cancel(): void {
+    this.aborted = true;
+    const s = this.current;
+    this.current = undefined;
+    if (!s || s.resolved) return;
+    s.resolved = true;
+    s.threat.freeze();
+    if (this.keyHandler) {
+      document.removeEventListener('keydown', this.keyHandler);
+      this.keyHandler = undefined;
+    }
+    s.resolve({
+      correct: false,
+      timedOut: false,
+      aborted: true,
+      chosenId: null,
+      correctId: '',
+      responseMs: 0,
+    });
+  }
+
   mount(ch: GrammarChallenge, opts: RoundOptions): Promise<RoundResult> {
+    if (this.aborted) {
+      return Promise.resolve({
+        correct: false,
+        timedOut: false,
+        aborted: true,
+        chosenId: null,
+        correctId: ch.correctOptionId,
+        responseMs: 0,
+      });
+    }
     return new Promise<RoundResult>((resolve) => {
       clear(this.container);
       const card = renderPrompt(ch);
@@ -85,6 +121,7 @@ export class RoundView {
         start: performance.now(),
         pausedAt: 0,
         resolved: false,
+        resolve,
       };
       this.current = state;
 
