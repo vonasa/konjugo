@@ -53,7 +53,7 @@ export const PRESETS: Preset[] = [
     blurb: 'Case labelled · gender shown · gentle clock',
     cueMode: 'L1',
     genderCue: 'full',
-    baseClockMs: 8450,
+    baseClockMs: 10140,
     ramp: RAMP_L1,
   },
   {
@@ -62,7 +62,7 @@ export const PRESETS: Preset[] = [
     blurb: 'Preposition cues · gender coloured · standard clock',
     cueMode: 'L2',
     genderCue: 'color',
-    baseClockMs: 6760,
+    baseClockMs: 8112,
     ramp: RAMP_L2,
   },
   {
@@ -71,7 +71,7 @@ export const PRESETS: Preset[] = [
     blurb: 'Preposition cues · recall the gender · fast clock',
     cueMode: 'L2',
     genderCue: 'off',
-    baseClockMs: 4732,
+    baseClockMs: 5678,
     ramp: RAMP_L2,
   },
 ];

@@ -14,7 +14,7 @@ export function tierForCorrect(correctCount: number): number {
 
 /** Grammar pool + round clock for the player's progress.
  *
- *  Clock is a sawtooth: each tier *starts* at 90% of the previous tier's start
+ *  Clock is a sawtooth: each tier *starts* at 95% of the previous tier's start
  *  (`TIER_RESET_FACTOR^(tier-1) × base`), then shrinks every correct answer
  *  within the tier (`WITHIN_TIER_STEP` of the tier start per round). So speed
  *  ramps up inside a tier, then eases back on tier-up — never below the floor.

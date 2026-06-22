@@ -53,7 +53,7 @@ describe('planForProgress — sawtooth clock', () => {
     expect(r2).toBeLessThan(r1);
   });
 
-  it('resets UP on tier-up (relief), to 90% of the previous tier start', () => {
+  it('resets UP on tier-up (relief), to 95% of the previous tier start', () => {
     const tier1End = planForProgress(beginner, N - 1).clockMs;
     const tier2Start = planForProgress(beginner, N).clockMs;
     expect(tier2Start).toBeGreaterThan(tier1End);
@@ -62,7 +62,7 @@ describe('planForProgress — sawtooth clock', () => {
     );
   });
 
-  it('each tier start is ~10% below the previous tier start', () => {
+  it('each tier start is ~5% below the previous tier start', () => {
     const s1 = planForProgress(beginner, 0).clockMs;
     const s2 = planForProgress(beginner, N).clockMs;
     const s3 = planForProgress(beginner, 2 * N).clockMs;
