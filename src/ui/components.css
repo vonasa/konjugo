@@ -10,6 +10,10 @@
   display: flex;
   flex-direction: column;
   gap: clamp(1.25rem, 5vh, 2.5rem);
+  /* the round is a tap surface (answers + hold-to-study); never select its text */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* ---- Prompt card ---- */
@@ -119,6 +123,36 @@
   animation: pop 0.18s ease-out;
 }
 
+/* hold-to-study hint shown under the reveal; text swaps while held */
+.inspect-hint {
+  margin-top: 0.1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  opacity: 0.75;
+  text-align: center;
+}
+.inspect-hint .when-held {
+  display: none;
+}
+.round.inspecting .inspect-hint .when-idle {
+  display: none;
+}
+.round.inspecting .inspect-hint .when-held {
+  display: inline;
+  color: var(--accent);
+  opacity: 1;
+}
+@media (pointer: coarse) {
+  .inspect-hint .kbd-only {
+    display: none;
+  }
+}
+/* subtle frozen-to-study cue while held */
+.round.inspecting .prompt-card {
+  border-color: var(--accent);
+}
+
 /* ---- Options (2-2-1 grid) ---- */
 .options {
   display: grid;
@@ -194,9 +228,16 @@
   }
 }
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
 }
 
 /* ---- Reference table (endings cheat sheet) ---- */

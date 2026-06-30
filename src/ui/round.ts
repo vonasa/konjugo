@@ -1,6 +1,11 @@
 import type { GrammarChallenge } from '../content/types';
 import { clear } from './dom';
-import { renderPrompt, revealBlankIn, showRuleIn } from './promptCard';
+import {
+  renderPrompt,
+  revealBlankIn,
+  showRuleIn,
+  showInspectHintIn,
+} from './promptCard';
 import { renderOptions } from './options';
 import { Threat } from './threat';
 import { CONFIG } from '../game/config';
@@ -38,6 +43,8 @@ interface ActiveRound {
   pausedAt: number; // 0 when not paused
   resolved: boolean;
   resolve: (r: RoundResult) => void; // resolver of the mount() promise
+  advanceTimer?: number; // pending auto-advance to the next round
+  teardownStudy?: () => void; // remove hold-to-study listeners (reveal only)
 }
 
 /** Renders one challenge with the advancing-threat clock, handles tap/click +
@@ -84,13 +91,21 @@ export class RoundView {
     this.aborted = true;
     const s = this.current;
     this.current = undefined;
-    if (!s || s.resolved) return;
-    s.resolved = true;
-    s.threat.freeze();
     if (this.keyHandler) {
       document.removeEventListener('keydown', this.keyHandler);
       this.keyHandler = undefined;
     }
+    if (!s) return;
+    // Drop any hold-to-study listeners + the pending auto-advance from a reveal,
+    // so a mid-reveal restart can't leave document listeners or a timer behind.
+    s.teardownStudy?.();
+    if (s.advanceTimer !== undefined) {
+      clearTimeout(s.advanceTimer);
+      s.advanceTimer = undefined;
+    }
+    s.resolved = true;
+    s.threat.freeze();
+    // resolve() is idempotent — a no-op if the round already settled.
     s.resolve({
       correct: false,
       timedOut: false,
@@ -148,7 +163,80 @@ export class RoundView {
 
       const settle = (result: RoundResult, delay: number): void => {
         cleanup();
-        window.setTimeout(() => resolve(result), delay);
+        state.advanceTimer = window.setTimeout(() => resolve(result), delay);
+      };
+
+      // After a miss the correct answer stays on screen for `delay` ms before the
+      // next round. Let the player hold — mouse/touch anywhere, or the Space key —
+      // to freeze that countdown and study the mistake; releasing resumes it.
+      const settleWithStudy = (result: RoundResult, delay: number): void => {
+        cleanup();
+        let remaining = delay;
+        let armedAt = performance.now();
+        let held = false;
+
+        const finish = (): void => {
+          teardown();
+          resolve(result);
+        };
+        const arm = (): void => {
+          armedAt = performance.now();
+          state.advanceTimer = window.setTimeout(
+            finish,
+            Math.max(0, remaining),
+          );
+        };
+        const holdStart = (): void => {
+          if (held) return;
+          held = true;
+          if (state.advanceTimer !== undefined) {
+            clearTimeout(state.advanceTimer);
+            state.advanceTimer = undefined;
+          }
+          remaining = Math.max(0, remaining - (performance.now() - armedAt));
+          this.container.classList.add('inspecting');
+        };
+        const holdEnd = (): void => {
+          if (!held) return;
+          held = false;
+          this.container.classList.remove('inspecting');
+          arm(); // resume the countdown with whatever time was left
+        };
+        const onKeyDown = (e: KeyboardEvent): void => {
+          if (e.code === 'Space' || e.key === ' ') {
+            e.preventDefault(); // don't scroll / re-trigger a focused button
+            holdStart();
+          }
+        };
+        const onKeyUp = (e: KeyboardEvent): void => {
+          if (e.code === 'Space' || e.key === ' ') {
+            e.preventDefault();
+            holdEnd();
+          }
+        };
+        const teardown = (): void => {
+          if (state.advanceTimer !== undefined) {
+            clearTimeout(state.advanceTimer);
+            state.advanceTimer = undefined;
+          }
+          this.container.classList.remove('inspecting');
+          document.removeEventListener('keydown', onKeyDown);
+          document.removeEventListener('keyup', onKeyUp);
+          document.removeEventListener('pointerdown', holdStart);
+          document.removeEventListener('pointerup', holdEnd);
+          document.removeEventListener('pointercancel', holdEnd);
+          window.removeEventListener('blur', holdEnd);
+          state.teardownStudy = undefined;
+        };
+        state.teardownStudy = teardown;
+
+        document.addEventListener('keydown', onKeyDown);
+        document.addEventListener('keyup', onKeyUp);
+        document.addEventListener('pointerdown', holdStart);
+        document.addEventListener('pointerup', holdEnd);
+        document.addEventListener('pointercancel', holdEnd); // touch interrupted
+        window.addEventListener('blur', holdEnd); // releasing focus shouldn't hang
+        arm();
       };
 
       const handlePick = (chosenId: string): void => {
@@ -158,23 +246,33 @@ export class RoundView {
         threat.freeze();
         const correct = chosenId === ch.correctOptionId;
         markButtons(chosenId);
+        const result = {
+          correct,
+          timedOut: false,
+          chosenId,
+          correctId: ch.correctOptionId,
+          responseMs,
+        };
         if (correct) {
           const btn = buttons.find((b) => b.dataset['id'] === chosenId);
           if (btn) {
             const r = btn.getBoundingClientRect();
-            burstAt(r.left + r.width / 2, r.top + r.height / 2, 'var(--success)');
+            burstAt(
+              r.left + r.width / 2,
+              r.top + r.height / 2,
+              'var(--success)',
+            );
           }
           sfx.correct(opts.combo ?? 1);
+          settle(result, this.timing.correctMs);
         } else {
           sfx.wrong();
           screenFlash('wrong');
           revealBlankIn(card, ch);
           showRuleIn(card, ch);
+          showInspectHintIn(card);
+          settleWithStudy(result, this.timing.revealMs);
         }
-        settle(
-          { correct, timedOut: false, chosenId, correctId: ch.correctOptionId, responseMs },
-          correct ? this.timing.correctMs : this.timing.revealMs,
-        );
       };
 
       const handleTimeout = (): void => {
@@ -184,7 +282,8 @@ export class RoundView {
         sfx.wrong();
         revealBlankIn(card, ch);
         showRuleIn(card, ch);
-        settle(
+        showInspectHintIn(card);
+        settleWithStudy(
           {
             correct: false,
             timedOut: true,

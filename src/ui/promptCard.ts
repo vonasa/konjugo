@@ -66,4 +66,23 @@ export function showRuleIn(card: HTMLElement, ch: GrammarChallenge): void {
   card.append(el('div', { class: 'rule-tag', text: ruleText(ch.rule) }));
 }
 
+/** On a miss: a dim hint that holding (mouse/touch anywhere, or Space) freezes
+ *  the auto-advance so the player can study the revealed answer. */
+export function showInspectHintIn(card: HTMLElement): void {
+  card.append(
+    el(
+      'div',
+      { class: 'inspect-hint' },
+      el(
+        'span',
+        { class: 'when-idle' },
+        '⏸ Hold anywhere',
+        el('span', { class: 'kbd-only', text: ' or Space' }),
+        ' to study',
+      ),
+      el('span', { class: 'when-held', text: 'Paused — release to continue' }),
+    ),
+  );
+}
+
 export { mustEl };
